@@ -16,7 +16,7 @@ gem 'geokit'
 
 gem 'rails_12factor', group: :production
 
-ruby '2.3.0p0'
+ruby '2.3.0'
 
 
 # To use ActiveModel has_secure_password
