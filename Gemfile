@@ -7,8 +7,12 @@ gem 'rails-api'
 
 gem 'spring', :group => :development
 
+gem 'geocoder'
+gem 'twilio-ruby', '~> 4.11.1'
 
-gem 'sqlite3'
+gem 'pg'
+
+gem 'geokit'
 
 
 
