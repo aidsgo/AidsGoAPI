@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161028143524) do
+ActiveRecord::Schema.define(version: 20161028143626) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,6 +27,14 @@ ActiveRecord::Schema.define(version: 20161028143524) do
     t.jsonb    "emergency_call"
     t.datetime "created_at",     null: false
     t.datetime "updated_at",     null: false
+  end
+
+  create_table "emergencies", force: :cascade do |t|
+    t.integer  "elder_id",             null: false
+    t.jsonb    "elder_location"
+    t.boolean  "emergency_validation"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
   end
 
   create_table "volunteers", force: :cascade do |t|
