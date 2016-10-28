@@ -1,5 +1,5 @@
 GEM
-  remote: https://ruby.taobao.org/
+  remote: https://rubygems.org/
   specs:
     actionmailer (4.2.7)
       actionpack (= 4.2.7)
@@ -126,6 +126,9 @@ DEPENDENCIES
   rails_12factor
   spring
   twilio-ruby (~> 4.11.1)
+
+RUBY VERSION
+   ruby 2.3.0p0
 
 BUNDLED WITH
    1.12.5

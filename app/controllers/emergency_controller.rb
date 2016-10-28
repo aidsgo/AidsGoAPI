@@ -15,6 +15,10 @@ class EmergencyController < ApplicationController
     end
   end
 
+  def emergency_test
+    render json: {:testing => 'I am happy!!!'}
+  end
+
 
   # [
   #   {
