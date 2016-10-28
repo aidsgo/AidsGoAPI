@@ -1,4 +1,11 @@
 Rails.application.routes.draw do
+
+  post '/emergency', :to => 'emergency#notify'
+  get '/emergency', :to => 'emergency#show_emergency_list'
+  put '/emergency/resolved', :to => 'emergency#update_resolved'
+  put '/emergency/:action_name', :to => 'emergency#update_action'
+
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
