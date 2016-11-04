@@ -47,8 +47,9 @@ class EmergencyController < ApplicationController
       alert.get_nearby_emergencies(volunteer_location, distance)
     end
 
-    results = emergencies.map do |emergency|
-      {
+    results ={}
+    emergencies.each do |emergency|
+      results.merge!({ emergency.id => {
         id: emergency.id,
         name: Elder.find(emergency.elder_id).name,
         distance: calculate_distance(volunteer_location, emergency.elder_location),
@@ -58,7 +59,7 @@ class EmergencyController < ApplicationController
         reject: emergency.reject.include?(volunteer_name),
         taken: emergency_taken?(emergency),
         resolved: emergency.emergency_validation
-      }
+      }})
     end
 
     render json: results
