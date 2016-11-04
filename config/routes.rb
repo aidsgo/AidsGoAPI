@@ -2,7 +2,7 @@ Rails.application.routes.draw do
 
   post '/emergency', :to => 'emergency#notify'
 
-  put '/emergencies/:emergency_id/resolve', :to => 'emergency#update_resolved'
+  put '/emergencies/:emergency_id/resolve/:volunteer_id', :to => 'emergency#update_resolved'
   put '/emergency/:action_name', :to => 'emergency#update_action'
   put '/emergencies/:emergency_id/add/:volunteer_id', :to => 'emergency#accept'
 

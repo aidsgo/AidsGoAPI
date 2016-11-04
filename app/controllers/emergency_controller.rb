@@ -78,7 +78,7 @@ class EmergencyController < ApplicationController
 
   def update_resolved
     emergency = Emergency.find(params[:emergency_id])
-    if emergency.update(resolved: true)
+    if emergency.resolve.to_s.empty? && emergency.update(resolved: params[:volunteer_id])
 
       # notify_folks(Elder.find(emergency.elder_id), 'Emergency has been resolved by volunteers!')
 
