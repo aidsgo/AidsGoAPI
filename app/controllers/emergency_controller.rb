@@ -7,7 +7,7 @@ class EmergencyController < ApplicationController
       volunteers = nearby_volunteers(elder_location, injured_elder)
 
       # uncomment this one when production
-      # notify_folks(injured_elder)
+      # notify_folks(injured_elder, "Emergency is happening!")
 
       render json: {:nearby_volunteers => volunteers}
     else
@@ -24,7 +24,14 @@ class EmergencyController < ApplicationController
   end
 
   def accept
-    render :nothing
+    volunteer_id = params[:volunteer_id]
+    emergency = Emergency.find(params[:emergency_id])
+
+    accepted_volunteers = emergency.accept
+    accepted_volunteers = accepted_volunteers << volunteer_id unless accepted_volunteers.include?(volunteer_id)
+    emergency.update_attributes(accept: accepted_volunteers)
+
+    render json: emergency
   end
 
   # [
@@ -47,7 +54,6 @@ class EmergencyController < ApplicationController
   # ]
   def show_emergency_list
     distance = params[:distance] || 500
-    volunteer_name = params[:name]
     volunteer_location = format_locations(eval params[:volunteer_location])
 
     emergencies = Emergency.all.select do |alert|
@@ -62,9 +68,7 @@ class EmergencyController < ApplicationController
         distance: calculate_distance(volunteer_location, emergency.elder_location),
         location: emergency.elder_location,
         time: emergency.created_at,
-        volunteer: emergency.accept,
-        reject: emergency.reject.include?(volunteer_name),
-        taken: emergency_taken?(emergency),
+        taken: emergency.accept,
         resolved: emergency.emergency_validation
       }})
     end
@@ -73,8 +77,12 @@ class EmergencyController < ApplicationController
   end
 
   def update_resolved
-    if Emergency.find(params[:emergency_id]).update(emergency_validation: true)
-      render text: 'Aid resolved successfully', status: :created
+    emergency = Emergency.find(params[:emergency_id])
+    if emergency.update(emergency_validation: false)
+
+      # notify_folks(Elder.find(emergency.elder_id), 'Emergency has been resolved by volunteers!')
+
+      render json: emergency, status: :created
     else
       render error: 'Aid resolved fails', status: :unprocessable_entity
     end
@@ -107,7 +115,7 @@ class EmergencyController < ApplicationController
     Geocoder::Calculations.distance_between(current_location, [elder_location['lat'], elder_location['lng']], :units => :km)
   end
 
-  def notify_folks(injured_elder)
+  def notify_folks(injured_elder, emergency_msg)
     account_sid = 'ACd2aa2cae113c8e8e4c7f0efc6af83cde'
     auth_token = '5259dc17f07f6e065adc6cf54bcb9ced'
     @client = Twilio::REST::Client.new account_sid, auth_token
@@ -115,7 +123,7 @@ class EmergencyController < ApplicationController
     @client.messages.create(
       from: '+16412434301',
       to: injured_elder.emergency_call['phone'],
-      body: 'Emergency !!!!!!!!! Kuai lai!!!!'
+      body: emergency_msg
     )
   end
 

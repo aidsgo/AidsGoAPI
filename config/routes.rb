@@ -2,16 +2,13 @@ Rails.application.routes.draw do
 
   post '/emergency', :to => 'emergency#notify'
 
-  put '/emergency/resolved', :to => 'emergency#update_resolved'
+  put '/emergencies/:emergency_id/resolve', :to => 'emergency#update_resolved'
   put '/emergency/:action_name', :to => 'emergency#update_action'
+  put '/emergencies/:emergency_id/add/:volunteer_id', :to => 'emergency#accept'
 
-  get '/emergency', :to => 'emergency#show_emergency_list'
-  get '/emergency/my_incidents', :to => 'emergency#my_taken_incidents'
-  get '/emergency/all_volunteers', :to => 'emergency/my_info'
-  get '/volunteer/all', :to => 'volunteer/show_all'
-  get '/emergency/accept', :to => 'emergency/accept'
-
-
+  get '/emergencies', :to => 'emergency#show_emergency_list'
+  get '/emergencies/volunteers/:volunteer_id', :to => 'emergency#my_taken_incidents'
+  get '/volunteers', :to => 'volunteer#show_all'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
