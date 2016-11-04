@@ -21,7 +21,7 @@ end
 
 
 Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661},
-                 accept: ['name 0', 'name 1', 'name 2'], reject: ['name 4', 'name 5'],
+                 accept: [], reject: [],
                  emergency_validation: true)
 # Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661}, emergency_validation: true)
 # Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661}, emergency_validation: false)

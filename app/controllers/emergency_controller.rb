@@ -15,10 +15,17 @@ class EmergencyController < ApplicationController
     end
   end
 
-  def emergency_test
-    render json: {:testing => 'I am happy!!!'}
+  def my_taken_incidents
+    my_incidents = Emergency.all.select do |emergency|
+       emergency.accept.include?(params[:volunteer_id])
+    end
+
+    render json: my_incidents
   end
 
+  def accept
+    render :nothing
+  end
 
   # [
   #   {
@@ -66,7 +73,7 @@ class EmergencyController < ApplicationController
   end
 
   def update_resolved
-    if Emergency.find(params[:emergency_id]).update(resolved: true)
+    if Emergency.find(params[:emergency_id]).update(emergency_validation: true)
       render text: 'Aid resolved successfully', status: :created
     else
       render error: 'Aid resolved fails', status: :unprocessable_entity
@@ -89,7 +96,7 @@ class EmergencyController < ApplicationController
 
   private
   def emergency_taken?(emergency)
-    (emergency.accept.length > 0) && !emergency.nil?
+    !emergency.nil? && (emergency.accept.length > 0)
   end
 
   def format_locations(location)

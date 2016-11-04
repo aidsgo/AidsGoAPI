@@ -1,11 +1,16 @@
 Rails.application.routes.draw do
 
   post '/emergency', :to => 'emergency#notify'
-  get '/emergency', :to => 'emergency#show_emergency_list'
+
   put '/emergency/resolved', :to => 'emergency#update_resolved'
   put '/emergency/:action_name', :to => 'emergency#update_action'
 
-  get '/emergency/test', :to => 'emergency#emergency_test'
+  get '/emergency', :to => 'emergency#show_emergency_list'
+  get '/emergency/my_incidents', :to => 'emergency#my_taken_incidents'
+  get '/emergency/all_volunteers', :to => 'emergency/my_info'
+  get '/volunteer/all', :to => 'volunteer/show_all'
+  get '/emergency/accept', :to => 'emergency/accept'
+
 
 
   # The priority is based upon order of creation: first created -> highest priority.
