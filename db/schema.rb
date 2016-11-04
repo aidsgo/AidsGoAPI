@@ -15,8 +15,9 @@ ActiveRecord::Schema.define(version: 20161028143937) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "uuid-ossp"
 
-  create_table "elders", force: :cascade do |t|
+  create_table "elders", id: :uuid, default: "uuid_generate_v4()", force: :cascade do |t|
     t.string   "name"
     t.date     "birthday"
     t.string   "sex"
@@ -32,16 +33,16 @@ ActiveRecord::Schema.define(version: 20161028143937) do
   end
 
   create_table "emergencies", force: :cascade do |t|
-    t.integer  "elder_id",             null: false
+    t.uuid     "elder_id",       null: false
     t.jsonb    "elder_location"
-    t.boolean  "emergency_validation"
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
+    t.uuid     "resolved"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
     t.jsonb    "accept"
     t.jsonb    "reject"
   end
 
-  create_table "volunteers", force: :cascade do |t|
+  create_table "volunteers", id: :uuid, default: "uuid_generate_v4()", force: :cascade do |t|
     t.string   "name"
     t.date     "birthday"
     t.string   "sex"

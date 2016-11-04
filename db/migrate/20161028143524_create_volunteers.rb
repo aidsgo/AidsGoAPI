@@ -1,6 +1,6 @@
 class CreateVolunteers < ActiveRecord::Migration
   def change
-    create_table :volunteers do |t|
+    create_table :volunteers, id: :uuid do |t|
       t.string :name
       t.date :birthday
       t.string :sex

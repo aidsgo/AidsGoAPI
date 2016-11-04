@@ -4,6 +4,6 @@ class Emergency < ActiveRecord::Base
   end
 
   def resolved?
-    emergency_validation
+    resolved
   end
 end

@@ -1,6 +1,8 @@
 class CreateElders < ActiveRecord::Migration
   def change
-    create_table :elders do |t|
+    enable_extension "uuid-ossp"
+
+    create_table :elders, id: :uuid do |t|
       t.string :name
       t.date :birthday
       t.string :sex

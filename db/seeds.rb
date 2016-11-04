@@ -20,11 +20,11 @@ Elder.create(name: 'xiao ming', birthday: '2000/1/1', sex: 'female', community: 
 end
 
 
-Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661},
+Emergency.create(elder_id: Elder.first.id, elder_location: {lat: 34.256403, lng: 108.953661},
                  accept: [], reject: [],
-                 emergency_validation: true)
-# Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661}, emergency_validation: true)
-# Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661}, emergency_validation: false)
-# Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661}, emergency_validation: true)
-# Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661  }, emergency_validation: true)
+                 resolved: '')
+# Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661}, resolved: false)
+# Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661}, resolved: true)
+# Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661}, resolved: false)
+# Emergency.create(elder_id: 1, elder_location: {lat: 34.256403, lng: 108.953661  }, resolved: false)
 

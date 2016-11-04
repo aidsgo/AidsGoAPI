@@ -3,7 +3,7 @@ class EmergencyController < ApplicationController
     injured_elder = params[:serial_number] ? Elder.find_by(serial_number: params[:serial_number]) : Elder.find(params[:elder_id])
     elder_location = params[:current_location] || transfer_location(injured_elder.address)
 
-    if Emergency.new(elder_id: injured_elder.id, elder_location: elder_location, emergency_validation: true).save
+    if Emergency.new(elder_id: injured_elder.id, elder_location: elder_location, resolved: false).save
       volunteers = nearby_volunteers(elder_location, injured_elder)
 
       # uncomment this one when production
@@ -69,7 +69,7 @@ class EmergencyController < ApplicationController
         location: emergency.elder_location,
         time: emergency.created_at,
         taken: emergency.accept,
-        resolved: emergency.emergency_validation
+        resolved: emergency.resolved
       }})
     end
 
@@ -78,7 +78,7 @@ class EmergencyController < ApplicationController
 
   def update_resolved
     emergency = Emergency.find(params[:emergency_id])
-    if emergency.update(emergency_validation: false)
+    if emergency.update(resolved: true)
 
       # notify_folks(Elder.find(emergency.elder_id), 'Emergency has been resolved by volunteers!')
 
