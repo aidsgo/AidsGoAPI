@@ -9,7 +9,7 @@ class EmergencyController < ApplicationController
       # uncomment this one when production
       # notify_folks(injured_elder, "Emergency is happening!")
 
-      render json: {:nearby_volunteers => volunteers}
+      render json: {:nearby_volunteers => volunteers}, status: :created
     else
       render nothing: true
     end
@@ -31,7 +31,7 @@ class EmergencyController < ApplicationController
     accepted_volunteers = accepted_volunteers << volunteer_id unless accepted_volunteers.include?(volunteer_id)
     emergency.update_attributes(accept: accepted_volunteers)
 
-    render json: emergency
+    render status :ok
   end
 
   # [
