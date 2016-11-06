@@ -24,7 +24,7 @@ class EmergencyController < ApplicationController
   end
 
   def accept
-    volunteer_id = params[:volunteer_id]
+    volunteer_id = params[:volunteer_id].to_i
     emergency = Emergency.find(params[:emergency_id])
 
     accepted_volunteers = emergency.accept
