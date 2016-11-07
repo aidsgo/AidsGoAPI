@@ -32,7 +32,7 @@ ActiveRecord::Schema.define(version: 20161028143937) do
     t.string   "address"
   end
 
-  create_table "emergencies", force: :cascade do |t|
+  create_table "emergencies", id: :uuid, default: "uuid_generate_v4()", force: :cascade do |t|
     t.uuid     "elder_id",       null: false
     t.jsonb    "elder_location"
     t.uuid     "resolved"
