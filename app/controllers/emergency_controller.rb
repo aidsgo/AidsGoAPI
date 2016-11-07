@@ -47,7 +47,7 @@ class EmergencyController < ApplicationController
     accepted_volunteers = accepted_volunteers << volunteer_id unless accepted_volunteers.include?(volunteer_id)
     emergency.update_attributes(accept: accepted_volunteers)
 
-    render :nothing, status :ok
+    render nothing: true, status: :ok
   end
 
   # [
