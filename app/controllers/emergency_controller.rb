@@ -73,7 +73,7 @@ class EmergencyController < ApplicationController
     volunteer_location = format_locations(eval params[:volunteer_location])
 
     emergencies = Emergency.all.select do |alert|
-      alert.get_nearby_emergencies(volunteer_location, distance) && !alert.resolved?
+      !alert.resolved? && alert.get_nearby_emergencies(volunteer_location, distance)
     end
 
     results ={}
@@ -94,7 +94,7 @@ class EmergencyController < ApplicationController
 
   def update_resolved
     emergency = Emergency.find(params[:emergency_id])
-    if emergency.resolve.to_s.empty? && emergency.update(resolved: params[:volunteer_id])
+    if emergency.resolved.to_s.empty? && emergency.update(resolved: params[:volunteer_id])
 
       # notify_folks(Elder.find(emergency.elder_id), 'Emergency has been resolved by volunteers!')
 
