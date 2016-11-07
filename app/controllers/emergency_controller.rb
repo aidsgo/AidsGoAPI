@@ -17,21 +17,37 @@ class EmergencyController < ApplicationController
 
   def my_taken_incidents
     my_incidents = Emergency.all.select do |emergency|
-       emergency.accept.include?(params[:volunteer_id])
+      emergency.accept.include?(params[:volunteer_id])
     end
 
-    render json: my_incidents
+    results ={}
+    my_incidents.each do |incident|
+      results.merge!(
+        {
+          incident.id => {
+            id: incident.id,
+            name: Elder.find(incident.elder_id).name,
+            location: incident.elder_location,
+            time: incident.created_at,
+            taken: incident.accept,
+            resolved: incident.resolved
+          }
+        }
+      )
+    end
+
+    render json: results
   end
 
   def accept
-    volunteer_id = params[:volunteer_id].to_i
+    volunteer_id = params[:volunteer_id]
     emergency = Emergency.find(params[:emergency_id])
 
     accepted_volunteers = emergency.accept
     accepted_volunteers = accepted_volunteers << volunteer_id unless accepted_volunteers.include?(volunteer_id)
     emergency.update_attributes(accept: accepted_volunteers)
 
-    render status :ok
+    render :nothing, status :ok
   end
 
   # [
