@@ -4,6 +4,6 @@ class Emergency < ActiveRecord::Base
   end
 
   def resolved?
-    resolved
+    !resolved.blank?
   end
 end

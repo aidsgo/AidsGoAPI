@@ -73,7 +73,7 @@ class EmergencyController < ApplicationController
     volunteer_location = format_locations(eval params[:volunteer_location])
 
     emergencies = Emergency.all.select do |alert|
-      alert.get_nearby_emergencies(volunteer_location, distance)
+      alert.get_nearby_emergencies(volunteer_location, distance) && !alert.resolved?
     end
 
     results ={}
