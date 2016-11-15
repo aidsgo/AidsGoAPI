@@ -7,10 +7,13 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
-Elder.create(name: 'xiao ming', birthday: '2000/1/1', sex: 'female', community: '天谷八路环普产业园', image: 'http://image.jpg',
-             address: '140 Market St, San Francisco, CA', serial_number: 'serial_number 1',
+Elder.create(name: '王奶奶', birthday: '2000/1/1', sex: 'female', community: '天谷八路环普产业园', image: 'http://image.jpg',
+             address: '140 Market St, San Francisco, CA', serial_number: 'G030JF05435585ES',
              contact: {phone: '12345678', email: 'asdf@gmail.com', weChat: '12345678'}, help_count: 5,
              emergency_call: {phone: '+8618629453426', email: 'asdf@gmail.com', weChat: '12345678'})
+
+
+
 
 
 (0..5).each do |index|
