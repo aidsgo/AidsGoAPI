@@ -173,7 +173,7 @@ class EmergencyController < ApplicationController
     request = Net::HTTP::Post.new(uri.request_uri, 'Content-Type' => 'application/json')
     request.basic_auth APP_KEY, MASER_SECRET
     request.body = push_data_generator(elder_name).to_json
-    res = http.request(request)
+    http.request(request)
   end
 
   def push_data_generator elder_name
@@ -182,6 +182,9 @@ class EmergencyController < ApplicationController
         :audience => "all",
         :notification => {
         :alert => "#{elder_name} 需要救助!",
+        },
+        :options => {
+        :apns_production => false
         }
     }
   end
