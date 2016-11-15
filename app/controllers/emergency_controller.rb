@@ -1,4 +1,12 @@
+require 'uri'
+require 'net/http'
+
 class EmergencyController < ApplicationController
+  PUSH_URL = 'https://api.jpush.cn/v3/push'
+  APP_KEY = '7ae6d033056378bf5f352bae'
+  MASER_SECRET ='1c9caae6c118a950a90f3cf6'
+
+
   def notify
     injured_elder = params[:serial_number] ? Elder.find_by(serial_number: params[:serial_number]) : Elder.find(params[:elder_id])
     elder_location = params[:current_location] || transfer_location(injured_elder.address)
@@ -8,7 +16,7 @@ class EmergencyController < ApplicationController
 
       # uncomment this one when production
       # notify_folks(injured_elder, "Emergency is happening!")
-
+      send_push_notify injured_elder.name
       render json: {:nearby_volunteers => volunteers}, status: :created
     else
       render nothing: true
@@ -157,4 +165,25 @@ class EmergencyController < ApplicationController
       injured_elder.get_nearby_volunteers(format_locations(elder_location), volunteer.get_location)
     end
   end
+
+  def send_push_notify elder_name
+    uri = URI(PUSH_URL)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    request = Net::HTTP::Post.new(uri.request_uri, 'Content-Type' => 'application/json')
+    request.basic_auth APP_KEY, MASER_SECRET
+    request.body = push_data_generator(elder_name).to_json
+    res = http.request(request)
+  end
+
+  def push_data_generator elder_name
+    {
+        :platform => "all",
+        :audience => "all",
+        :notification => {
+        :alert => "#{elder_name} 需要救助!",
+        }
+    }
+  end
+
 end
