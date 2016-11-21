@@ -86,14 +86,17 @@ class EmergencyController < ApplicationController
 
     results ={}
     emergencies.each do |emergency|
+      emergency_elder = Elder.find(emergency.elder_id)
       results.merge!({ emergency.id => {
         id: emergency.id,
-        name: Elder.find(emergency.elder_id).name,
+        name: emergency_elder.name,
         distance: calculate_distance(volunteer_location, emergency.elder_location),
         location: emergency.elder_location,
         time: emergency.created_at,
         taken: emergency.accept,
-        resolved: emergency.resolved
+        resolved: emergency.resolved,
+        emergency_call: emergency_elder.emergency_call['phone'],
+        property_management_company_phone: emergency_elder.emergency_call['pmc_phone']
       }})
     end
 
