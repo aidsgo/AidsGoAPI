@@ -1,24 +1,29 @@
 require 'uri'
 require 'net/http'
+require 'json'
+require_relative '../connectors/wilddog_connector'
 
 class EmergencyController < ApplicationController
   PUSH_URL = 'https://api.jpush.cn/v3/push'
   APP_KEY = '7ae6d033056378bf5f352bae'
   MASER_SECRET ='1c9caae6c118a950a90f3cf6'
 
+  def initialize
+    @wd_connector = WildDogConnector.new
+  end
 
   def notify
     injured_elder = params[:serial_number] ? Elder.find_by(serial_number: params[:serial_number]) : Elder.find(params[:elder_id])
     elder_location = params[:current_location] || transfer_location(injured_elder.address)
 
-    if Emergency.new(elder_id: injured_elder.id, elder_location: elder_location, resolved: false).save
+    begin
+      new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, resolved: false)
       volunteers = nearby_volunteers(elder_location, injured_elder)
-
-      # uncomment this one when production
-      # notify_folks(injured_elder, "Emergency is happening!")
-      send_push_notify injured_elder.name
+      @wd_connector.add_new_incidents new_emergency.id
       render json: {:nearby_volunteers => volunteers}, status: :created
-    else
+    rescue => e
+      p e.backtrace
+      logger.fatal e.message
       render nothing: true
     end
   end
@@ -53,9 +58,13 @@ class EmergencyController < ApplicationController
   def accept
     volunteer_id = params[:volunteer_id]
     emergency = Emergency.find(params[:emergency_id])
-
+    @wd_connector.add_volunteer_to_incident emergency.id, volunteer_id
     accepted_volunteers = emergency.accept
-    accepted_volunteers = accepted_volunteers << volunteer_id unless accepted_volunteers.include?(volunteer_id)
+    if accepted_volunteers.nil?
+      accepted_volunteers = [volunteer_id]
+    else
+      accepted_volunteers = accepted_volunteers << volunteer_id unless accepted_volunteers.include?(volunteer_id)
+    end
     emergency.update_attributes(accept: accepted_volunteers)
 
     render nothing: true, status: :ok
