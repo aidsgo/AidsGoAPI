@@ -18,11 +18,10 @@ class EmergencyController < ApplicationController
 
     begin
       new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, resolved: false)
-      volunteers = nearby_volunteers(elder_location, injured_elder)
       @wd_connector.add_new_incidents new_emergency.id
+      volunteers = nearby_volunteers(elder_location, injured_elder)
       render json: {:nearby_volunteers => volunteers}, status: :created
     rescue => e
-      p e.backtrace
       logger.fatal e.message
       render nothing: true
     end
@@ -118,7 +117,7 @@ class EmergencyController < ApplicationController
   def update_resolved
     emergency = Emergency.find(params[:emergency_id])
     if emergency.resolved.to_s.empty? && emergency.update(resolved: params[:volunteer_id])
-
+      @wd_connector.resolve_incident params[:emergency_id]
       # notify_folks(Elder.find(emergency.elder_id), 'Emergency has been resolved by volunteers!')
 
       render json: emergency, status: :created
