@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   get '/volunteers/:volunteer_id/emergencies', :to => 'volunteer#my_taken_incidents'
   get '/volunteers', :to => 'volunteer#show_all'
 
-  put '/login', :to => 'volunteer_login#login'
-  post '/sign_up', :to => 'volunteer_login#sign_up'
+  put 'volunteers/login', :to => 'volunteer#login'
+  post 'volunteers/sign_up', :to => 'volunteer#sign_up'
+
+  put 'elders/login', :to => 'elder#login'
+  post 'elders/sign_up', :to => 'volunteer#sign_up'
 end
