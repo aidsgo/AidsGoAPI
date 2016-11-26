@@ -12,7 +12,7 @@ class VolunteerController < ApplicationController
       volunteer.public_key = rsa_public
 
       if volunteer.save
-        payload = {:phone => phone, :pwd => pwd}
+        payload = {:phone => phone}
         token = JWT.encode payload, rsa_private, 'RS256'
 
         render json: {message: 'Login successfully', token: token}, status: :ok
@@ -31,7 +31,7 @@ class VolunteerController < ApplicationController
     pwd = params[:pwd]
 
     if !user_exists?(phone) && Volunteer.new(phone: phone, pwd: pwd, public_key: rsa_public).save
-      payload = {:phone => phone, :pwd => pwd}
+      payload = {:phone => phone}
       token = JWT.encode payload, rsa_private, 'RS256'
 
       render json: {message: 'Sign up successfully', token: token}, status: :created
