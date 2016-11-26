@@ -10,6 +10,9 @@ Rails.application.routes.draw do
   get '/emergencies/volunteers/:volunteer_id', :to => 'emergency#my_taken_incidents'
   get '/volunteers', :to => 'volunteer#show_all'
 
+  put '/login', :to => 'volunteer_login#login'
+  post '/sign_up', :to => 'volunteer_login#sign_up'
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

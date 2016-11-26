@@ -120,6 +120,7 @@ PLATFORMS
 DEPENDENCIES
   geocoder
   geokit
+  jwt
   pg
   rails (= 4.2.7)
   rails-api
