@@ -6,8 +6,8 @@ class ElderController < ApplicationController
     elder = Elder.find_by(phone: phone)
 
     if elder && pwd === elder.pwd
-      rsa_private, rsa_public = encrypt_token
-      elder.public_key = rsa_public
+      token = encrypt_token(phone)
+      elder.public_key = token
 
       if elder.save
         payload = {:phone => phone}
@@ -23,30 +23,24 @@ class ElderController < ApplicationController
   end
 
   def sign_up
-    rsa_private,rsa_public = encrypt_token
-
     phone = params[:phone]
     pwd = params[:pwd]
     serial_number = params[:serial_number] || ''
+    token  = encrypt_token(phone)
 
-    if !user_exists?(phone) && Elder.new(phone: phone, pwd: pwd, public_key: rsa_public, serial_number: serial_number).save
-      payload = {:phone => phone}
-      token = JWT.encode payload, rsa_private, 'RS256'
-
+    if !user_exists?(phone) && Elder.new(phone: phone, pwd: pwd, public_key: token, serial_number: serial_number).save
       render json: {message: 'Sign up successfully', token: token}, status: :created
     else
       render text: 'Already exists', status: :unprocessable_entity
     end
-    # decoded_token = JWT.decode token, rsa_public, true, { :algorithm => 'RS256' }
   end
 
   private
 
-  def encrypt_token
+  def encrypt_token(phone)
     rsa_private = OpenSSL::PKey::RSA.generate 2048
-    rsa_public = rsa_private.public_key
-
-    return rsa_private, rsa_public
+    payload = {:phone => phone}
+    JWT.encode payload, rsa_private, 'RS256'
   end
 
   def user_exists?(phone)

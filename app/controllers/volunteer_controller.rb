@@ -8,13 +8,10 @@ class VolunteerController < ApplicationController
     volunteer = Volunteer.find_by(phone: phone)
 
     if volunteer && pwd === volunteer.pwd
-      rsa_private, rsa_public = encrypt_token
-      volunteer.public_key = rsa_public
+      token = encrypt_token(phone)
+      volunteer.public_key = token
 
       if volunteer.save
-        payload = {:phone => phone}
-        token = JWT.encode payload, rsa_private, 'RS256'
-
         render json: {message: 'Login successfully', token: token}, status: :ok
       else
         render text: 'Login failed', status: :unauthorized
@@ -25,39 +22,49 @@ class VolunteerController < ApplicationController
   end
 
   def sign_up
-    rsa_private,rsa_public = encrypt_token
-
     phone = params[:phone]
     pwd = params[:pwd]
+    token = encrypt_token phone
 
-    if !user_exists?(phone) && Volunteer.new(phone: phone, pwd: pwd, public_key: rsa_public).save
-      payload = {:phone => phone}
-      token = JWT.encode payload, rsa_private, 'RS256'
-
+    if !user_exists?(phone) && Volunteer.new(phone: phone, pwd: pwd, public_key: token).save
       render json: {message: 'Sign up successfully', token: token}, status: :created
     else
       render text: 'Already exists', status: :unprocessable_entity
     end
-    # decoded_token = JWT.decode token, rsa_public, true, { :algorithm => 'RS256' }
   end
 
-  def show_all
-    render json: Volunteer.all
+  def testing
+    token = request.headers[:token]
+    phone = params[:phone]
+    volunteer = Volunteer.find_by(phone: phone, public_key: token)
+
+    if volunteer
+      render text: '111', status: :ok
+    else
+      render text: '222', status: :unauthorized
+    end
+
   end
 
   def accept
+    token = request.headers[:token]
     volunteer_id = params[:volunteer_id]
-    emergency = Emergency.find(params[:emergency_id])
-    WildDogConnector.new.add_volunteer_to_incident emergency.id, volunteer_id
-    accepted_volunteers = emergency.accept
-    if accepted_volunteers.nil?
-      accepted_volunteers = [volunteer_id]
-    else
-      accepted_volunteers = accepted_volunteers << volunteer_id unless accepted_volunteers.include?(volunteer_id)
-    end
-    emergency.update_attributes(accept: accepted_volunteers)
 
-    render nothing: true, status: :ok
+    if Volunteer.find_by(id: volunteer_id, public_key: token)
+      emergency = Emergency.find(params[:emergency_id])
+      WildDogConnector.new.add_volunteer_to_incident emergency.id, volunteer_id
+      accepted_volunteers = emergency.accept
+      if accepted_volunteers.nil?
+        accepted_volunteers = [volunteer_id]
+      else
+        accepted_volunteers = accepted_volunteers << volunteer_id unless accepted_volunteers.include?(volunteer_id)
+      end
+      emergency.update_attributes(accept: accepted_volunteers)
+
+      render nothing: true, status: :ok
+    else
+      render text: 'Authentication failed', status: :unauthorized
+    end
   end
 
 
@@ -89,9 +96,12 @@ class VolunteerController < ApplicationController
   end
 
   def update_resolved
-    emergency = Emergency.find(params[:emergency_id])
-    if emergency.resolved.to_s.empty? && emergency.update(resolved: params[:volunteer_id])
-      @wd_connector.resolve_incident params[:emergency_id]
+    emergency_id = params[:emergency_id]
+    volunteer_id = params[:volunteer_id]
+    emergency = Emergency.find(emergency_id)
+
+    if emergency.resolved.to_s.empty? && emergency.update(resolved: volunteer_id)
+      @wd_connector.resolve_incident emergency_id
       # notify_folks(Elder.find(emergency.elder_id), 'Emergency has been resolved by volunteers!')
 
       render json: emergency, status: :created
@@ -100,13 +110,16 @@ class VolunteerController < ApplicationController
     end
   end
 
+  def show_all
+    render json: Volunteer.all
+  end
+
   private
 
-  def encrypt_token
+  def encrypt_token(phone)
     rsa_private = OpenSSL::PKey::RSA.generate 2048
-    rsa_public = rsa_private.public_key
-
-    return rsa_private, rsa_public
+    payload = {:phone => phone}
+    JWT.encode payload, rsa_private, 'RS256'
   end
 
   def user_exists?(phone)

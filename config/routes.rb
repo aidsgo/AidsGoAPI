@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
   put 'volunteers/login', :to => 'volunteer#login'
   post 'volunteers/sign_up', :to => 'volunteer#sign_up'
+  post 'volunteers/testing', :to => 'volunteer#testing'
 
   put 'elders/login', :to => 'elder#login'
   post 'elders/sign_up', :to => 'volunteer#sign_up'
