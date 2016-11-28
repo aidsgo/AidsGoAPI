@@ -55,7 +55,7 @@ class EmergencyController < ApplicationController
   def show_emergency_list
     volunteer_id = params[:volunteer_id]
     token = request.headers[:Authorization]
-    
+
     if auth?(Volunteer, volunteer_id, token)
       distance = params[:distance] || 500
       volunteer_location = format_locations(eval params[:volunteer_location])
