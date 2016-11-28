@@ -13,17 +13,24 @@ class EmergencyController < ApplicationController
   end
 
   def notify
-    injured_elder = params[:serial_number] ? Elder.find_by(serial_number: params[:serial_number]) : Elder.find(params[:elder_id])
-    elder_location = params[:current_location] || transfer_location(injured_elder.address)
+    elder_id = params[:elder_id]
+    token = request.headers[:Authorization]
 
-    begin
-      new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, resolved: false)
-      @wd_connector.add_new_incidents new_emergency.id
-      volunteers = nearby_volunteers(elder_location, injured_elder)
-      render json: {:nearby_volunteers => volunteers}, status: :created
-    rescue => e
-      logger.fatal e.message
-      render nothing: true
+    if auth?(Elder, elder_id, token)
+      injured_elder = params[:serial_number] ? Elder.find_by(serial_number: params[:serial_number]) : Elder.find(elder_id)
+      elder_location = params[:current_location] || transfer_location(injured_elder.address)
+
+      begin
+        new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, resolved: false)
+        @wd_connector.add_new_incidents new_emergency.id
+        volunteers = nearby_volunteers(elder_location, injured_elder)
+        render json: {:nearby_volunteers => volunteers}, status: :created
+      rescue => e
+        logger.fatal e.message
+        render nothing: true
+      end
+    else
+      render text: 'Authentication failed', status: :unauthorized
     end
   end
 
@@ -46,30 +53,37 @@ class EmergencyController < ApplicationController
   #   }
   # ]
   def show_emergency_list
-    distance = params[:distance] || 500
-    volunteer_location = format_locations(eval params[:volunteer_location])
+    volunteer_id = params[:volunteer_id]
+    token = request.headers[:Authorization]
+    
+    if auth?(Volunteer, volunteer_id, token)
+      distance = params[:distance] || 500
+      volunteer_location = format_locations(eval params[:volunteer_location])
 
-    emergencies = Emergency.all.select do |alert|
-      !alert.resolved? && alert.get_nearby_emergencies(volunteer_location, distance)
+      emergencies = Emergency.all.select do |alert|
+        !alert.resolved? && alert.get_nearby_emergencies(volunteer_location, distance)
+      end
+
+      results ={}
+      emergencies.each do |emergency|
+        emergency_elder = Elder.find(emergency.elder_id)
+        results.merge!({emergency.id => {
+          id: emergency.id,
+          name: emergency_elder.name,
+          distance: calculate_distance(volunteer_location, emergency.elder_location),
+          location: emergency.elder_location,
+          time: emergency.created_at,
+          taken: emergency.accept,
+          resolved: emergency.resolved,
+          emergency_call: emergency_elder.emergency_call['phone'],
+          property_management_company_phone: emergency_elder.emergency_call['pmc_phone']
+        }})
+      end
+
+      render json: results, status: :ok
+    else
+      render text: 'Authentication failed', status: :unauthorized
     end
-
-    results ={}
-    emergencies.each do |emergency|
-      emergency_elder = Elder.find(emergency.elder_id)
-      results.merge!({ emergency.id => {
-        id: emergency.id,
-        name: emergency_elder.name,
-        distance: calculate_distance(volunteer_location, emergency.elder_location),
-        location: emergency.elder_location,
-        time: emergency.created_at,
-        taken: emergency.accept,
-        resolved: emergency.resolved,
-        emergency_call: emergency_elder.emergency_call['phone'],
-        property_management_company_phone: emergency_elder.emergency_call['pmc_phone']
-      }})
-    end
-
-    render json: results
   end
 
   def update_action
@@ -87,6 +101,11 @@ class EmergencyController < ApplicationController
   end
 
   private
+
+  def auth?(klass, user_id, token)
+    klass.find_by(id: user_id, public_key: token)
+  end
+
   def emergency_taken?(emergency)
     !emergency.nil? && (emergency.accept.length > 0)
   end
@@ -138,15 +157,14 @@ class EmergencyController < ApplicationController
 
   def push_data_generator elder_name
     {
-        :platform => "all",
-        :audience => "all",
-        :notification => {
+      :platform => 'all',
+      :audience => 'all',
+      :notification => {
         :alert => "#{elder_name} 需要救助!",
-        },
-        :options => {
+      },
+      :options => {
         :apns_production => false
-        }
+      }
     }
   end
-
 end

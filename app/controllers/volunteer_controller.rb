@@ -34,24 +34,11 @@ class VolunteerController < ApplicationController
     end
   end
 
-  def testing
-    token = request.headers[:Authorization]
-    phone = params[:phone]
-    volunteer = Volunteer.find_by(phone: phone, public_key: token)
-
-    if volunteer
-      render text: '111', status: :ok
-    else
-      render text: '222', status: :unauthorized
-    end
-
-  end
-
   def accept
     token = request.headers[:Authorization]
     volunteer_id = params[:volunteer_id]
 
-    if Volunteer.find_by(id: volunteer_id, public_key: token)
+    if auth?(token, volunteer_id)
       emergency = Emergency.find(params[:emergency_id])
       WildDogConnector.new.add_volunteer_to_incident emergency.id, volunteer_id
       accepted_volunteers = emergency.accept
@@ -68,46 +55,58 @@ class VolunteerController < ApplicationController
     end
   end
 
-
   def my_taken_incidents
-    my_incidents = Emergency.all.select do |emergency|
-      emergency.accept.include?(params[:volunteer_id])
-    end
+    token = request.headers[:Authorization]
+    volunteer_id = params[:volunteer_id]
 
-    results ={}
-    my_incidents.each do |incident|
-      emergency_elder = Elder.find(incident.elder_id)
-      results.merge!(
-        {
-          incident.id => {
-            id: incident.id,
-            name: Elder.find(incident.elder_id).name,
-            location: incident.elder_location,
-            time: incident.created_at,
-            taken: incident.accept,
-            resolved: incident.resolved,
-            emergency_call: emergency_elder.emergency_call['phone'],
-            property_management_company_phone: emergency_elder.emergency_call['pmc_phone']
+    if auth?(token, volunteer_id)
+      my_incidents = Emergency.all.select do |emergency|
+        emergency.accept.include?(volunteer_id)
+      end
+
+      results ={}
+      my_incidents.each do |incident|
+        emergency_elder = Elder.find(incident.elder_id)
+        results.merge!(
+          {
+            incident.id => {
+              id: incident.id,
+              name: Elder.find(incident.elder_id).name,
+              location: incident.elder_location,
+              time: incident.created_at,
+              taken: incident.accept,
+              resolved: incident.resolved,
+              emergency_call: emergency_elder.emergency_call['phone'],
+              property_management_company_phone: emergency_elder.emergency_call['pmc_phone']
+            }
           }
-        }
-      )
-    end
+        )
+      end
 
-    render json: results
+      render json: results, status: :ok
+    else
+      render text: 'Authentication failed', status: :unauthorized
+    end
   end
 
   def update_resolved
-    emergency_id = params[:emergency_id]
+    token = request.headers[:Authorization]
     volunteer_id = params[:volunteer_id]
-    emergency = Emergency.find(emergency_id)
 
-    if emergency.resolved.to_s.empty? && emergency.update(resolved: volunteer_id)
-      @wd_connector.resolve_incident emergency_id
-      # notify_folks(Elder.find(emergency.elder_id), 'Emergency has been resolved by volunteers!')
+    if auth?(token, volunteer_id)
+      emergency_id = params[:emergency_id]
+      emergency = Emergency.find(emergency_id)
 
-      render json: emergency, status: :created
+      if emergency.resolved.to_s.empty? && emergency.update(resolved: volunteer_id)
+        @wd_connector.resolve_incident emergency_id
+        # notify_folks(Elder.find(emergency.elder_id), 'Emergency has been resolved by volunteers!')
+
+        render json: emergency, status: :created
+      else
+        render error: 'Aid resolved fails', status: :unprocessable_entity
+      end
     else
-      render error: 'Aid resolved fails', status: :unprocessable_entity
+      render text: 'Authentication failed', status: :unauthorized
     end
   end
 
@@ -116,6 +115,10 @@ class VolunteerController < ApplicationController
   end
 
   private
+
+  def auth?(token, volunteer_id)
+    Volunteer.find_by(id: volunteer_id, public_key: token)
+  end
 
   def encrypt_token(phone)
     rsa_private = OpenSSL::PKey::RSA.generate 2048
