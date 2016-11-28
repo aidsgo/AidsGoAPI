@@ -1,7 +1,7 @@
 class ElderController < ApplicationController
   def login
-    phone = params[:phone]
-    pwd = params[:pwd]
+    phone = params[:phone_number]
+    pwd = params[:password]
 
     elder = Elder.find_by(phone: phone)
 
@@ -20,8 +20,8 @@ class ElderController < ApplicationController
   end
 
   def sign_up
-    phone = params[:phone]
-    pwd = params[:pwd]
+    phone = params[:phone_number]
+    pwd = params[:password]
     serial_number = params[:serial_number] || ''
     token  = encrypt_token(phone)
 
