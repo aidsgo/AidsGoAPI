@@ -2,8 +2,8 @@ require_relative '../connectors/wilddog_connector'
 
 class VolunteerController < ApplicationController
   def login
-    phone = params[:phone]
-    pwd = params[:pwd]
+    phone = params[:phone_number]
+    pwd = params[:password]
 
     volunteer = Volunteer.find_by(phone: phone)
 
@@ -12,7 +12,7 @@ class VolunteerController < ApplicationController
       volunteer.public_key = token
 
       if volunteer.save
-        render json: {message: 'Login successfully', token: token}, status: :ok
+        render json: {message: 'Login successfully', token: token, id: volunteer.id, name: volunteer.name, phone: volunteer.phone}, status: :ok
       else
         render text: 'Login failed', status: :unauthorized
       end
@@ -22,19 +22,20 @@ class VolunteerController < ApplicationController
   end
 
   def sign_up
-    phone = params[:phone]
-    pwd = params[:pwd]
+    phone = params[:phone_number]
+    pwd = params[:password]
     token = encrypt_token phone
 
     if !user_exists?(phone) && Volunteer.new(phone: phone, pwd: pwd, public_key: token).save
-      render json: {message: 'Sign up successfully', token: token}, status: :created
+      volunteer = Volunteer.find_by_phone(phone)
+      render json: {message: 'Sign up successfully', token: token, id: volunteer.id, name: volunteer.name, phone: volunteer.phone}, status: :created
     else
       render text: 'Already exists', status: :unprocessable_entity
     end
   end
 
   def testing
-    token = request.headers[:token]
+    token = request.headers[:Authorization]
     phone = params[:phone]
     volunteer = Volunteer.find_by(phone: phone, public_key: token)
 
@@ -47,7 +48,7 @@ class VolunteerController < ApplicationController
   end
 
   def accept
-    token = request.headers[:token]
+    token = request.headers[:Authorization]
     volunteer_id = params[:volunteer_id]
 
     if Volunteer.find_by(id: volunteer_id, public_key: token)

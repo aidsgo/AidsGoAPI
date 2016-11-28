@@ -10,10 +10,7 @@ class ElderController < ApplicationController
       elder.public_key = token
 
       if elder.save
-        payload = {:phone => phone}
-        token = JWT.encode payload, rsa_private, 'RS256'
-
-        render json: {message: 'Login successfully', token: token}, status: :ok
+        render json: {message: 'Login successfully', token: token, id: elder.id, name: elder.name, phone: elder.phone, serial_number: elder.serial_number}, status: :ok
       else
         render text: 'Login failed', status: :unauthorized
       end
@@ -29,7 +26,8 @@ class ElderController < ApplicationController
     token  = encrypt_token(phone)
 
     if !user_exists?(phone) && Elder.new(phone: phone, pwd: pwd, public_key: token, serial_number: serial_number).save
-      render json: {message: 'Sign up successfully', token: token}, status: :created
+      elder = Elder.find_by_phone(phone)
+      render json: {message: 'Sign up successfully', token: token, id: elder.id, name: elder.name, phone: elder.phone, serial_number: elder.serial_number}, status: :created
     else
       render text: 'Already exists', status: :unprocessable_entity
     end
