@@ -11,10 +11,10 @@ class WildDogConnector
   def add_new_incidents emergency_id
     current_incidents = get_current_incident
     if current_incidents.nil?
-      updated_incidents = {"activeIncidents" => {emergency_id => {"id" => emergency_id}}}
+      updated_incidents = {'activeIncidents' => {emergency_id => {'id' => emergency_id}}}
       send_put_request "#{@wilddog_url}.json", updated_incidents.to_json
     else
-      updated_incidents = current_incidents.merge({emergency_id => {"id" => emergency_id}})
+      updated_incidents = current_incidents.merge({emergency_id => {'id' => emergency_id}})
       send_put_request "#{@wilddog_url}/activeIncidents.json", updated_incidents.to_json
     end
   end
@@ -22,7 +22,7 @@ class WildDogConnector
   def add_volunteer_to_incident emergency_id, volunteer_id
     current_volunteers = get_current_incident_volunteers emergency_id
     if current_volunteers.nil?
-      updated_volunteers = {"id"=> emergency_id, "volunteers" =>[volunteer_id]}
+      updated_volunteers = {'id'=> emergency_id, 'volunteers' =>[volunteer_id]}
       send_put_request "#{@wilddog_url}/activeIncidents/#{emergency_id}.json", updated_volunteers.to_json
     else
       current_volunteers = transfer_hash_to_array(current_volunteers) if current_volunteers.is_a?(Hash)

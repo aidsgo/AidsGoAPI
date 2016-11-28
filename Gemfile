@@ -16,6 +16,8 @@ gem 'geokit'
 
 gem 'rails_12factor', group: :production
 
+gem 'jwt'
+
 ruby '2.3.0'
 
 
