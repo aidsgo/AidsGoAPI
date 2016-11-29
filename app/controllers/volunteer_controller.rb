@@ -1,6 +1,11 @@
 require_relative '../connectors/wilddog_connector'
 
 class VolunteerController < ApplicationController
+
+  def initialize
+    @wd_connector = WildDogConnector.new
+  end
+
   def login
     phone = params[:phone_number]
     pwd = params[:password]
@@ -40,7 +45,7 @@ class VolunteerController < ApplicationController
 
     if auth?(token, volunteer_id)
       emergency = Emergency.find(params[:emergency_id])
-      WildDogConnector.new.add_volunteer_to_incident emergency.id, volunteer_id
+      @wd_connector.add_volunteer_to_incident emergency.id, volunteer_id
       accepted_volunteers = emergency.accept
       if accepted_volunteers.nil?
         accepted_volunteers = [volunteer_id]
@@ -105,6 +110,22 @@ class VolunteerController < ApplicationController
       else
         render error: 'Aid resolved fails', status: :unprocessable_entity
       end
+    else
+      unauthorized_action
+    end
+  end
+
+  def need_more
+    token = request.headers[:Authorization]
+    volunteer_id = params[:volunteer_id]
+    emergency_id = params[:emergency_id]
+    elder_location = params[:current_location]
+    elder_id = params[:elder_id]
+
+    if auth?(token, volunteer_id)
+      @wd_connector.add_new_incidents emergency_id
+      volunteers = nearby_volunteers(elder_location, Elder.find(elder_id))
+      render json: {:nearby_volunteers => volunteers}, status: :created
     else
       unauthorized_action
     end

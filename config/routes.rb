@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
   put '/volunteers/:volunteer_id/resolve/:emergency_id', :to => 'volunteer#update_resolved'
   put '/volunteers/:volunteer_id/accept/:emergency_id', :to => 'volunteer#accept'
+  post '/volunteers/:volunteer_id/need_more/:emergency_id', :to => 'volunteer#accept'
   get '/volunteers/:volunteer_id/emergencies', :to => 'volunteer#my_taken_incidents'
   get '/volunteers', :to => 'volunteer#show_all'
 
