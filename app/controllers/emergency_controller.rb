@@ -51,7 +51,7 @@ class EmergencyController < ApplicationController
 
     if auth?(Volunteer, volunteer_id, token)
       distance = params[:distance] || 500
-      volunteer_location = format_locations(params[:volunteer_location]) unless params[:volunteer_location].blank?
+      volunteer_location = format_locations(params[:volunteer_location]) unless params[:volunteer_location].present?
 
       emergencies = Emergency.all.select do |alert|
         volunteer_location.blank? || (!alert.resolved? && alert.get_nearby_emergencies(volunteer_location, distance))
@@ -63,7 +63,7 @@ class EmergencyController < ApplicationController
         results.merge!({emergency.id => {
           id: emergency.id,
           name: emergency_elder.name,
-          distance: volunteer_location.blank? ? 'unknown' : calculate_distance(volunteer_location, emergency.elder_location),
+          distance: volunteer_location.present? ? 'unknown' : calculate_distance(volunteer_location, emergency.elder_location),
           location: emergency.elder_location,
           time: emergency.created_at,
           taken: emergency.accept,
@@ -85,7 +85,7 @@ class EmergencyController < ApplicationController
     elder_location = params[:current_location] || transfer_location(injured_elder.address)
 
     begin
-      new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, resolved: false)
+      new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, accept: [], reject: [], resolved: false)
       @wd_connector.add_new_incidents new_emergency.id
       volunteers = nearby_volunteers(elder_location, injured_elder)
       render json: {:nearby_volunteers => volunteers}, status: :created
