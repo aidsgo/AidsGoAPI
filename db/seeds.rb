@@ -9,10 +9,14 @@
 
 Elder.create(name: '王奶奶', phone: '8618629453422', birthday: '2000/1/1', sex: 'female', community: '天谷八路环普产业园', image: 'http://image.jpg',
              address: '140 Market St, San Francisco, CA', serial_number: 'G030JF05435585ES',
-             contact: {phone: '12345678', email: 'asdf@gmail.com', weChat: '12345678'}, help_count: 5,
+             phone: '000', pwd:'ÆðW¸e.AT5ÿ±úÔ',
+             contact: {email: 'asdf@gmail.com', weChat: '12345678'}, help_count: 5,
              emergency_call: {phone: '+8618629453426', pmc_phone: '+8618688888888', email: 'asdf@gmail.com', weChat: '12345678'})
 
-
+Volunteer.create(name: '小明', birthday: '2000/1/1', sex: 'male', community: '天谷八路环普产业园', image: 'http://image.jpg',
+                 phone: '000', pwd: 'ÆðW¸e.AT5ÿ±úÔ',
+                 contact: {email: 'asdf@gmail.com', weChat: '12345678'}, help_count: 5,
+                 emergency_call: {phone: '+8615829085945', email: 'asdf@gmail.com', weChat: '12345678'})
 
 #
 #
