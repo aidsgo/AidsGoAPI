@@ -51,10 +51,10 @@ class EmergencyController < ApplicationController
 
     if auth?(Volunteer, volunteer_id, token)
       distance = params[:distance] || 500
-      volunteer_location = format_locations(eval params[:volunteer_location])
+      volunteer_location = format_locations(params[:volunteer_location]) unless params[:volunteer_location].blank?
 
       emergencies = Emergency.all.select do |alert|
-        !alert.resolved? && alert.get_nearby_emergencies(volunteer_location, distance)
+        volunteer_location.blank? || (!alert.resolved? && alert.get_nearby_emergencies(volunteer_location, distance))
       end
 
       results ={}
@@ -63,7 +63,7 @@ class EmergencyController < ApplicationController
         results.merge!({emergency.id => {
           id: emergency.id,
           name: emergency_elder.name,
-          distance: calculate_distance(volunteer_location, emergency.elder_location),
+          distance: volunteer_location.blank? ? 'unknown' : calculate_distance(volunteer_location, emergency.elder_location),
           location: emergency.elder_location,
           time: emergency.created_at,
           taken: emergency.accept,
