@@ -12,5 +12,5 @@ Rails.application.routes.draw do
   post 'volunteers/sign_up', :to => 'volunteer#sign_up'
 
   post 'elders/login', :to => 'elder#login'
-  post 'elders/sign_up', :to => 'volunteer#sign_up'
+  post 'elders/sign_up', :to => 'elder#sign_up'
 end
