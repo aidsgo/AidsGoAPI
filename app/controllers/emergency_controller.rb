@@ -13,7 +13,7 @@ class EmergencyController < ApplicationController
   end
 
   def iot_notify
-    emergency_notify(Elder.find_by(id: params[:elder_id], serial_number: params[:serial_number]))
+    emergency_notify(Elder.find_by(serial_number: params[:serial_number]))
   end
 
   def notify
