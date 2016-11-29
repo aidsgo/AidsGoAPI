@@ -14,10 +14,10 @@ class VolunteerController < ApplicationController
       if volunteer.save
         render json: {message: 'Login successfully', token: token, id: volunteer.id, name: volunteer.name, phone: volunteer.phone}, status: :ok
       else
-        render text: 'Login failed', status: :unauthorized
+        login_failed
       end
     else
-      render text: 'Login failed', status: :unauthorized
+      login_failed
     end
   end
 
@@ -51,7 +51,7 @@ class VolunteerController < ApplicationController
 
       render nothing: true, status: :ok
     else
-      render text: 'Authentication failed', status: :unauthorized
+      unauthorized_action
     end
   end
 
@@ -85,7 +85,7 @@ class VolunteerController < ApplicationController
 
       render json: results, status: :ok
     else
-      render text: 'Authentication failed', status: :unauthorized
+      unauthorized_action
     end
   end
 
@@ -106,7 +106,7 @@ class VolunteerController < ApplicationController
         render error: 'Aid resolved fails', status: :unprocessable_entity
       end
     else
-      render text: 'Authentication failed', status: :unauthorized
+      unauthorized_action
     end
   end
 
@@ -116,8 +116,16 @@ class VolunteerController < ApplicationController
 
   private
 
+  def login_failed
+    render text: 'Login failed', status: :unauthorized
+  end
+
   def auth?(token, volunteer_id)
     Volunteer.find_by(id: volunteer_id, public_key: token)
+  end
+
+  def unauthorized_action
+    render text: 'Authentication failed', status: :unauthorized
   end
 
   def encrypt_token(phone)

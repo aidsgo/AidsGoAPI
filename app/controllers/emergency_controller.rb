@@ -12,25 +12,18 @@ class EmergencyController < ApplicationController
     @wd_connector = WildDogConnector.new
   end
 
+  def iot_notify
+    emergency_notify(Elder.find_by(id: params[:elder_id], serial_number: params[:serial_number]))
+  end
+
   def notify
     elder_id = params[:elder_id]
     token = request.headers[:Authorization]
 
     if auth?(Elder, elder_id, token)
-      injured_elder = params[:serial_number] ? Elder.find_by(serial_number: params[:serial_number]) : Elder.find(elder_id)
-      elder_location = params[:current_location] || transfer_location(injured_elder.address)
-
-      begin
-        new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, resolved: false)
-        @wd_connector.add_new_incidents new_emergency.id
-        volunteers = nearby_volunteers(elder_location, injured_elder)
-        render json: {:nearby_volunteers => volunteers}, status: :created
-      rescue => e
-        logger.fatal e.message
-        render nothing: true
-      end
+      emergency_notify(Elder.find(elder_id))
     else
-      render text: 'Authentication failed', status: :unauthorized
+      unauthorized_action
     end
   end
 
@@ -82,28 +75,32 @@ class EmergencyController < ApplicationController
 
       render json: results, status: :ok
     else
-      render text: 'Authentication failed', status: :unauthorized
-    end
-  end
-
-  def update_action
-    action_name = params[:action_name]
-    action_column = Emergency.find(params[:emergency_id]).send(action_name.to_sym)
-    action_column.push(params[:name])
-    emergency = Emergency.find(params[:emergency_id])
-    emergency[action_name.to_sym] = action_column
-
-    if emergency.save
-      render text: "Aid #{action_name} successfully", status: :created
-    else
-      render error: "Aid #{action_name} fails", status: :unprocessable_entity
+      unauthorized_action
     end
   end
 
   private
 
+  def emergency_notify(injured_elder)
+    elder_location = params[:current_location] || transfer_location(injured_elder.address)
+
+    begin
+      new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, resolved: false)
+      @wd_connector.add_new_incidents new_emergency.id
+      volunteers = nearby_volunteers(elder_location, injured_elder)
+      render json: {:nearby_volunteers => volunteers}, status: :created
+    rescue => e
+      logger.fatal e.message
+      render nothing: true
+    end
+  end
+
   def auth?(klass, user_id, token)
     klass.find_by(id: user_id, public_key: token)
+  end
+
+  def unauthorized_action
+    render text: 'Authentication failed', status: :unauthorized
   end
 
   def emergency_taken?(emergency)

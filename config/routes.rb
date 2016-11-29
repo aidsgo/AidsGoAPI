@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
-  post '/emergency', :to => 'emergency#notify'
-  put '/emergency/:action_name', :to => 'emergency#update_action'
+  post '/emergency/notify', :to => 'emergency#notify'
+  post '/emergency/notify/iot', :to => 'emergency#iot_notify'
   get '/emergencies', :to => 'emergency#show_emergency_list'
 
   put '/volunteers/:volunteer_id/resolve/:emergency_id', :to => 'volunteer#update_resolved'
