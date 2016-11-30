@@ -34,6 +34,18 @@ class ElderController < ApplicationController
     end
   end
 
+  def update
+    params.require(:user).permit!
+    elder = Elder.find_by_id(params[:user][:id])
+    elder.update_attributes!(params[:user])
+    render json: {message: 'Update successfully',
+                  token: elder.public_key,
+                  id: elder.id,
+                  name: elder.name,
+                  phone: elder.phone,
+                  serial_number: elder.serial_number}, status: :ok
+  end
+
   private
 
   def encrypt_token(phone)

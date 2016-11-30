@@ -14,4 +14,5 @@ Rails.application.routes.draw do
 
   post 'elders/login', :to => 'elder#login'
   post 'elders/sign_up', :to => 'elder#sign_up'
+  put 'elders/update', :to => 'elder#update'
 end
