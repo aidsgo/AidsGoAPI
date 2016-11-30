@@ -78,6 +78,7 @@ class VolunteerController < ApplicationController
               id: incident.id,
               name: Elder.find(incident.elder_id).name,
               location: incident.elder_location,
+              address: coordinates_to_address(incident.elder_location),
               time: incident.created_at,
               taken: incident.accept,
               resolved: incident.resolved,
@@ -136,6 +137,10 @@ class VolunteerController < ApplicationController
   end
 
   private
+
+  def coordinates_to_address(coordinates)
+    Geocoder.address([coordinates['lat'], coordinates['lng']])
+  end
 
   def login_failed
     render text: 'Login failed', status: :unauthorized

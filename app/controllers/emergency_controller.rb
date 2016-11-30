@@ -65,6 +65,7 @@ class EmergencyController < ApplicationController
           name: emergency_elder.name,
           distance: volunteer_location.present? ? 'unknown' : calculate_distance(volunteer_location, emergency.elder_location),
           location: emergency.elder_location,
+          address: coordinates_to_address(emergency.elder_location),
           time: emergency.created_at,
           taken: emergency.accept,
           resolved: emergency.resolved,
@@ -163,5 +164,9 @@ class EmergencyController < ApplicationController
         :apns_production => false
       }
     }
+  end
+
+  def coordinates_to_address(coordinates)
+    Geocoder.address([coordinates['lat'], coordinates['lng']])
   end
 end
