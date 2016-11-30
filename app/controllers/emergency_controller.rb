@@ -87,6 +87,7 @@ class EmergencyController < ApplicationController
 
     begin
       new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, accept: [], reject: [], resolved: false)
+      send_push_notify new_emergency.name
       @wd_connector.add_new_incidents new_emergency.id
       volunteers = nearby_volunteers(elder_location, injured_elder)
       render json: {:nearby_volunteers => volunteers}, status: :created
