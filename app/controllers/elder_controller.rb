@@ -22,11 +22,12 @@ class ElderController < ApplicationController
   def sign_up
     phone = params[:phone_number]
     pwd = params[:password]
+    name = params[:name]
     serial_number = params[:serial_number] || ''
     address = params[:address]
     token  = encrypt_token(phone)
 
-    if !user_exists?(phone) && Elder.new(phone: phone, pwd: pwd, public_key: token, serial_number: serial_number, address: address).save
+    if !user_exists?(phone) && Elder.new(phone: phone, pwd: pwd, public_key: token, name: name, serial_number: serial_number, address: address).save
       elder = Elder.find_by_phone(phone)
       render json: {message: 'Sign up successfully', token: token, id: elder.id, name: elder.name, phone: elder.phone, serial_number: elder.serial_number}, status: :created
     else
