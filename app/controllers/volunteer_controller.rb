@@ -1,4 +1,4 @@
-require_relative '../connectors/wilddog_connector'
+require 'connectors/wilddog_connector'
 
 class VolunteerController < ApplicationController
 

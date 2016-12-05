@@ -1,7 +1,7 @@
 require 'uri'
 require 'net/http'
 require 'json'
-require_relative '../connectors/wilddog_connector'
+require 'connectors/wilddog_connector'
 
 class EmergencyController < ApplicationController
   PUSH_URL = 'https://api.jpush.cn/v3/push'
