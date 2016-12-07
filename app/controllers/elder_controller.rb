@@ -37,18 +37,31 @@ class ElderController < ApplicationController
 
   def update
     params.require(:user).permit!
-    elder = Elder.find_by_id(params[:user][:id])
-    elder.update_attributes!(params[:user])
-    render json: {message: 'Update successfully',
-                  token: elder.public_key,
-                  id: elder.id,
-                  name: elder.name,
-                  phone: elder.phone,
-                  serial_number: elder.serial_number}, status: :ok
+    token = request.headers[:Authorization]
+    elder_id = params[:user][:id]
+    if auth?(token, elder_id)
+      elder = Elder.find_by_id(params[:user][:id])
+      elder.update_attributes!(params[:user])
+      render json: {message: 'Update successfully',
+                    token: elder.public_key,
+                    id: elder.id,
+                    name: elder.name,
+                    phone: elder.phone,
+                    serial_number: elder.serial_number}, status: :ok
+    else
+      unauthorized_action
+    end
   end
 
   private
 
+  def auth?(token, elder_id)
+    Elder.find_by(id: elder_id, public_key: token)
+  end
+
+  def unauthorized_action
+    render text: 'Authentication failed', status: :unauthorized
+  end
   def encrypt_token(phone)
     rsa_private = OpenSSL::PKey::RSA.generate 2048
     payload = {:phone => phone}

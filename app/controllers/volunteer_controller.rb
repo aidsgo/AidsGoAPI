@@ -39,6 +39,23 @@ class VolunteerController < ApplicationController
     end
   end
 
+  def update
+    params.require(:user).permit!
+    token = request.headers[:Authorization]
+    volunteer_id = params[:user][:id]
+    if auth?(token, volunteer_id)
+      volunteer = Volunteer.find_by_id(params[:user][:id])
+      volunteer.update_attributes!(params[:user])
+      render json: {message: 'Update successfully',
+                    token: volunteer.public_key,
+                    id: volunteer.id,
+                    name: volunteer.name,
+                    phone: volunteer.phone,}, status: :ok
+    else
+      unauthorized_action
+    end
+  end
+
   def accept
     token = request.headers[:Authorization]
     volunteer_id = params[:volunteer_id]
