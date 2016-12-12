@@ -39,6 +39,23 @@ class VolunteerController < ApplicationController
     end
   end
 
+  def update
+    params.require(:user).permit!
+    token = request.headers[:Authorization]
+    volunteer_id = params[:user][:id]
+    if auth?(token, volunteer_id)
+      volunteer = Volunteer.find_by_id(params[:user][:id])
+      volunteer.update_attributes!(params[:user])
+      render json: {message: 'Update successfully',
+                    token: volunteer.public_key,
+                    id: volunteer.id,
+                    name: volunteer.name,
+                    phone: volunteer.phone,}, status: :ok
+    else
+      unauthorized_action
+    end
+  end
+
   def accept
     token = request.headers[:Authorization]
     volunteer_id = params[:volunteer_id]
@@ -78,6 +95,7 @@ class VolunteerController < ApplicationController
               id: incident.id,
               name: Elder.find(incident.elder_id).name,
               location: incident.elder_location,
+              address: coordinates_to_address(incident.elder_location),
               time: incident.created_at,
               taken: incident.accept,
               resolved: incident.resolved,
@@ -136,6 +154,10 @@ class VolunteerController < ApplicationController
   end
 
   private
+
+  def coordinates_to_address(coordinates)
+    Geocoder.address([coordinates['lat'], coordinates['lng']])
+  end
 
   def login_failed
     render text: 'Login failed', status: :unauthorized

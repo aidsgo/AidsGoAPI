@@ -65,6 +65,7 @@ class EmergencyController < ApplicationController
           name: emergency_elder.name,
           distance: volunteer_location.present? ? 'unknown' : calculate_distance(volunteer_location, emergency.elder_location),
           location: emergency.elder_location,
+          address: coordinates_to_address(emergency.elder_location),
           time: emergency.created_at,
           taken: emergency.accept,
           resolved: emergency.resolved,
@@ -86,6 +87,7 @@ class EmergencyController < ApplicationController
 
     begin
       new_emergency = Emergency.create(elder_id: injured_elder.id, elder_location: elder_location, accept: [], reject: [], resolved: false)
+      send_push_notify injured_elder.name
       @wd_connector.add_new_incidents new_emergency.id
       volunteers = nearby_volunteers(elder_location, injured_elder)
       render json: {:nearby_volunteers => volunteers}, status: :created
@@ -163,5 +165,9 @@ class EmergencyController < ApplicationController
         :apns_production => false
       }
     }
+  end
+
+  def coordinates_to_address(coordinates)
+    Geocoder.address([coordinates['lat'], coordinates['lng']])
   end
 end
