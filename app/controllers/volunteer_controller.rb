@@ -83,7 +83,7 @@ class VolunteerController < ApplicationController
 
     if auth?(token, volunteer_id)
       my_incidents = Emergency.all.select do |emergency|
-        emergency.accept.include?(volunteer_id)
+        emergency.accept.include?(volunteer_id) unless emergency.accept.nil?
       end
 
       results ={}
