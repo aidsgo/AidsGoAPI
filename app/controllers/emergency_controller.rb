@@ -54,7 +54,7 @@ class EmergencyController < ApplicationController
       volunteer_location = format_locations(params[:volunteer_location]) unless params[:volunteer_location].present?
 
       emergencies = Emergency.all.select do |alert|
-        volunteer_location.blank? || (!alert.resolved? && alert.get_nearby_emergencies(volunteer_location, distance))
+        !alert.resolved? && (volunteer_location.blank? || alert.get_nearby_emergencies(volunteer_location, distance))
       end
 
       results ={}
